@@ -1,0 +1,73 @@
+#include<stdio.h>
+#include<winsock2.h>
+#include<WS2tcpip.h>
+
+int main(int argc, char* argv[]) {
+	WSADATA wsaData;
+	SOCKET srvSock, cltSock;
+	SOCKADDR_IN srvAddr;
+	SOCKADDR_IN cltAddr;
+	int sz_cltAddr;
+	int strLen = 0, idx = 0, readLen = 0;
+	char msg[100] = { 0, };
+
+	if (argc != 2) {
+		printf("usage : %s <port>\n", argv[0]);
+		exit(1);
+	}
+
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)		//윈도우에서 사용하기 위해서
+		printf("WSAStartup Error\n");
+	//WSAStartup()
+
+	srvSock = socket(AF_INET, SOCK_STREAM, 0);
+	if (srvSock == INVALID_SOCKET)
+		printf("socket Error!!\n");
+	//socket()
+
+	memset(&srvAddr, 0, sizeof(srvAddr));
+	srvAddr.sin_family = AF_INET;
+	//srvAddr.sin_addr.s_addr = inet_addr("127.0.0.1");							//InetPton(AF_INET, "192.168.1.10", &srvAddr.sin_addr.S_un);
+	srvAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	srvAddr.sin_port = htons(atoi(argv[1]));
+
+	if (bind(srvSock, (sockaddr*)& srvAddr, sizeof(srvAddr)) == SOCKET_ERROR)		//정상적으로 성공하면 0 실패할경우 -1
+		printf("bind Error!!\n");
+
+	//bind()
+
+
+	if (listen(srvSock, SOMAXCONN) == SOCKET_ERROR)					//정상적으로 성공하면 0 실패할경우 -1
+		printf("listen Error!!\n");
+	//listen();
+	//서버소켓은 클라이언트로 부터 소켓을 받아 대기 큐에 넣어주는 역활
+
+	sz_cltAddr = sizeof(cltAddr);
+
+	for (int i = 0;i<3;i++) {
+		cltSock = accept(srvSock, (SOCKADDR*)& cltAddr, &sz_cltAddr);		//listen 소켓 여러개 부여될 상황 떄문에 매개변수 소캣
+
+		printf("connected client : %s : %d\n", inet_ntoa(cltAddr.sin_addr), ntohs(cltAddr.sin_port));
+		//accept 반환형태 소켓
+		if (cltSock == INVALID_SOCKET)
+			printf("accpet Error!!\n");
+		else
+			printf("Client : %d\n", i + 1);
+
+		while(strLen = recv(cltSock, msg, sizeof(msg), 0) != 0){
+		if (strLen == -1)
+			fputs("recv Error", stderr);
+		
+		send(cltSock, msg, sizeof(msg), 0);
+		}
+
+		closesocket(cltSock);
+	}
+	//accept()
+
+	closesocket(srvSock);
+
+	WSACleanup();
+	//WSAStartup() 해제
+	return 0;
+}

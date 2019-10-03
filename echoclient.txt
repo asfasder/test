@@ -1,0 +1,62 @@
+#include<winsock2.h>
+#include<stdio.h>
+#include<stdlib.h>
+
+int main(int argc, char * argv[]) {
+	WSADATA wsaData;
+	SOCKET sock;
+	SOCKADDR_IN srvAddr;
+	int readLen = 0, strLen = 0, idx = 0, recvLen, recvCnt;
+	char msg[100] = { 0, };
+	char buf[100] = { 0, };
+
+	if (argc != 3) {
+		printf("usage : %s <server ip> <port>", argv[0]);
+	}
+
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)		//윈도우에서 사용하기 위해서
+		printf("WSAStartup Error\n");
+
+	sock = socket(AF_INET, SOCK_STREAM, 0);
+	if (sock == INVALID_SOCKET)
+		printf("socket Error!!\n");
+
+	memset(&srvAddr, 0, sizeof(srvAddr));
+	srvAddr.sin_family = AF_INET;
+	srvAddr.sin_addr.s_addr = inet_addr(argv[1]);
+	srvAddr.sin_port = htons(atoi(argv[2]));
+
+	if (connect(sock, (SOCKADDR*)& srvAddr, sizeof(srvAddr)) == SOCKET_ERROR)
+		printf("connect Error!!\n");
+
+	while(1){
+	//printf("Input : ");
+	//scanf("%s", msg);
+
+	fputs("Input Message: ", stdout);
+	fgets(msg, sizeof(msg), stdin);
+
+	if(!strcmp(msg, "q\n") || !strcmp(msg, "Q\n"))
+		break;
+
+	strLen = send(sock, msg, strlen(msg), 0);
+
+	recvLen = 0;
+	while(recvLen < strLen){
+		recvCnt = recv(sock, &buf[recvLen], sizeof(buf) - 1, 0);
+		if (recvCnt == -1)
+			printf("recv Error!!\n");
+
+		recvLen += recvCnt;
+	}
+
+	//printf("msg : %s\n", msg);
+
+	printf("Message : %s\n", buf);
+	}
+
+	closesocket(sock);
+
+	WSACleanup();
+	return 0;
+}

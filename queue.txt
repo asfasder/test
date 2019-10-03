@@ -1,0 +1,51 @@
+#include<stdio.h>
+
+typedef struct node{
+	int data;
+	struct node* link;
+}Queue;
+
+Queue * GetNode() {
+	Queue* tmp = (Queue*)malloc(sizeof(Queue));
+	tmp->link = NULL;
+	return tmp;
+}
+
+void EnQueue(Queue ** front, Queue** rear, int data) {	//큐 크기만큼 동적할당 첫번쨰 인큐가 되는 상황에서는 
+
+	if((*front) == NULL || (*rear) == NULL){
+	*front = GetNode();
+	*rear = *front;
+	} 
+	else{
+		(*rear)->link = GetNode();
+		*rear = (*rear)->link;
+	}
+	(*rear)->data = data;
+}
+
+void DeQueue(Queue ** front) {
+	if (*front == NULL) {
+		printf("비었습니다.");
+		return;
+	}
+	Queue* tmp;
+	tmp = (*front);
+	(*front) = (*front)->link;
+	free(tmp);
+}
+
+int main() {
+	Queue* front = NULL;	//큐만큼 주소
+	Queue* rear = NULL;
+
+	//front, rear;	
+	EnQueue(&front, &rear, 10);
+	EnQueue(&front, &rear, 20);
+	EnQueue(&front, &rear, 30);
+	EnQueue(&front, &rear, 40);
+	EnQueue(&front, &rear, 50);
+	
+	DeQueue(&front);
+
+}

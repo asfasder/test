@@ -1,0 +1,107 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<malloc.h>
+
+
+typedef struct node {
+	int data;
+	struct node* Llink;
+	struct node* Rlink;
+}Tree;
+
+Tree* GetNode() {
+	Tree* tmp = (Tree*)malloc(sizeof(Tree));
+	tmp->Llink = NULL;
+	tmp->Rlink = NULL;
+	return tmp;
+}
+
+
+
+void Insert(Tree** root, int data) {
+	if (*root == NULL) {
+		*root = GetNode();
+		(*root)->data = data;
+		return;
+
+	}
+	if ((*root)->data > data)
+		Insert(&(*root)->Llink, data);
+	else
+		Insert(&(*root)->Rlink, data);
+}
+
+
+
+void Perorder(Tree* root) {
+
+	if (root) {
+		printf("%d ", root->data);
+		Perorder(root->Llink);
+		Perorder(root->Rlink);
+	}
+}
+
+void Inorder(Tree* root) {
+	if (root) {
+		Inorder(root->Llink);
+		printf("%d ", root->data);
+		Inorder(root->Rlink);
+	}
+}
+
+void Postorder(Tree* root) {
+	if (root) {
+		Postorder(root->Llink);
+		Postorder(root->Rlink);
+		printf("%d ", root->data);
+	}
+}
+
+
+void Traversal(Tree* root) {
+	Perorder(root); printf("\n");
+	Inorder(root); printf("\n");
+	Postorder(root); printf("\n");
+}
+
+
+void Delete_leaf(Tree** root, int data)
+{
+	Tree* tmp = *root;
+	Tree* tmp2 = *root;
+	if (*root == NULL)
+		printf("삭제할 데이터가 존재하지 않습니다.\n");
+	else if ((*root)->Llink->data == data || (*root)->Rlink->data == data) {
+		if ((*root)->Llink->data == data) {
+			if ((*root)->Llink->Llink == NULL || (*root)->Llink->Rlink == NULL) {
+				tmp = (*root)->Llink;
+				(*root)->Llink = NULL;
+				free(tmp);
+			}
+		}
+	}
+	else
+	{
+		if ((*root)->data > data)
+			Delete_leaf(&(*root)->Llink, data);
+		if ((*root)->data < data)
+			Delete_leaf(&(*root)->Rlink, data);
+	}
+
+}
+
+int main() {
+	int tree[] = { 45 ,27, 17, 62, 57, 73, 52, 65, 76, 69, 63, 64, 71 };
+	Tree* root = NULL;
+
+	for (int i = 0; i < 13; i++)
+		Insert(&root, tree[i]);
+
+	Traversal(root);
+
+	Delete_leaf(&root, 64);   // 주소와 삭제할 데이터를 넘긴다.
+
+	Traversal(root);
+
+}
